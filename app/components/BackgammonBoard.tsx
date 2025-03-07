@@ -7,14 +7,14 @@ import { getPossibleMoves, makeMove, checkWinner, isValidMove } from '../utils/g
 const initialGameState: GameState = {
   points: Array.from({ length: 24 }, (_, i) => ({
     position: i + 1,
-    pieces: i === 5 ? Array(5).fill('black')          // Point 6: 5 black (bottom left)
-      : i === 7 ? Array(3).fill('black')          // Point 8: 3 black (bottom left)
-      : i === 12 ? Array(5).fill('black')         // Point 13: 5 black (top left)
-      : i === 23 ? Array(2).fill('black')         // Point 24: 2 black (top right)
-      : i === 0 ? Array(2).fill('white')          // Point 1: 2 white (bottom right)
-      : i === 11 ? Array(5).fill('white')         // Point 12: 5 white (bottom right)
-      : i === 16 ? Array(3).fill('white')         // Point 17: 3 white (top right)
-      : i === 18 ? Array(5).fill('white')         // Point 19: 5 white (top right)
+    pieces: i === 22 ? Array(3).fill('white')
+    : i === 0 ? Array(2).fill('white')
+    : i === 11 ? Array(5).fill('white')
+    : i === 12 ? Array(5).fill('white')
+    : i === 18 ? Array(5).fill('black')
+    : i === 5 ? Array(5).fill('black')
+    : i === 7 ? Array(3).fill('black')
+    : i === 17 ? Array(2).fill('black')
       : []
   })),
   bar: { white: 0, black: 0 },
