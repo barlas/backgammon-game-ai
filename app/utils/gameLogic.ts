@@ -29,7 +29,7 @@ export const isValidMove = (
       return false; // Must move from bar first
     }
     // For pieces entering from bar
-    const entryPoint = color === 'white' ? 25 - to : to;
+    const entryPoint = color === 'white' ? to : 25 - to;
     if (entryPoint < 1 || entryPoint > 6) {
       return false;
     }
@@ -81,8 +81,8 @@ export const isValidMove = (
 
   // Check if the move distance is available in dice
   const distance = Math.abs(color === 'white' 
-    ? (from === -1 ? 25 - to : from - to)
-    : (from === -1 ? to : to - from));
+    ? (from === -1 ? to : from - to)
+    : (from === -1 ? 25 - to : from - to));
   
   return gameState.dice.available.includes(distance);
 };
@@ -100,7 +100,7 @@ export const getPossibleMoves = (
       return [];
     }
     // Check possible entry points
-    const entryPoints = color === 'white' ? [19, 20, 21, 22, 23, 24] : [6, 5, 4, 3, 2, 1];
+    const entryPoints = color === 'white' ? [1, 2, 3, 4, 5, 6] : [24, 23, 22, 21, 20, 19];
     entryPoints.forEach(point => {
       if (isValidMove(gameState, -1, point, color)) {
         possibleMoves.push(point);
@@ -160,12 +160,12 @@ export const makeMove = (
 
   // Remove used die
   const distance = Math.abs(color === 'white' 
-    ? (from === -1 ? 25 - to : from - to)
-    : (from === -1 ? to : to - from));
+    ? (from === -1 ? to : from - to)
+    : (from === -1 ? 25 - to : from - to));
   const dieIndex = newState.dice.available.indexOf(distance);
   newState.dice.available.splice(dieIndex, 1);
 
-  // Check if turn is over
+  // Only switch turns if there are no dice left
   if (newState.dice.available.length === 0) {
     newState.currentPlayer = color === 'white' ? 'black' : 'white';
     newState.gamePhase = 'rolling';
