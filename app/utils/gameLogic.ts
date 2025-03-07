@@ -1,7 +1,7 @@
 import { GameState, Move, PieceColor } from '../types/backgammon';
 
 const isInHomeBoard = (position: number, color: PieceColor): boolean => {
-  return color === 'white' ? position >= 19 && position <= 24 : position >= 1 && position <= 6;
+  return color === 'white' ? position >= 1 && position <= 6 : position >= 19 && position <= 24;
 };
 
 const canBearOff = (gameState: GameState, color: PieceColor): boolean => {
@@ -29,7 +29,7 @@ export const isValidMove = (
       return false; // Must move from bar first
     }
     // For pieces entering from bar
-    const entryPoint = color === 'white' ? to : 25 - to;
+    const entryPoint = color === 'white' ? 25 - to : to;
     if (entryPoint < 1 || entryPoint > 6) {
       return false;
     }
@@ -43,7 +43,7 @@ export const isValidMove = (
         return false;
       }
       // When bearing off, must use exact number if possible
-      const exactNumberNeeded = color === 'white' ? 25 - from : from;
+      const exactNumberNeeded = color === 'white' ? from : 25 - from;
       if (!gameState.dice.available.includes(exactNumberNeeded)) {
         // Can only use larger number if no piece is further from home
         const largerNumberAvailable = gameState.dice.available.find(d => d > exactNumberNeeded);
@@ -52,10 +52,10 @@ export const isValidMove = (
         }
         // Check if any piece is further from home
         const furthestPiecePos = color === 'white' 
-          ? Math.min(...gameState.points.map((p, i) => p.pieces.includes(color) ? i + 1 : 25))
-          : Math.max(...gameState.points.map((p, i) => p.pieces.includes(color) ? i + 1 : 0));
-        if ((color === 'white' && furthestPiecePos < from) || 
-            (color === 'black' && furthestPiecePos > from)) {
+          ? Math.max(...gameState.points.map((p, i) => p.pieces.includes(color) ? i + 1 : 0))
+          : Math.min(...gameState.points.map((p, i) => p.pieces.includes(color) ? i + 1 : 25));
+        if ((color === 'white' && furthestPiecePos > from) || 
+            (color === 'black' && furthestPiecePos < from)) {
           return false;
         }
       }
@@ -64,17 +64,27 @@ export const isValidMove = (
     return false;
   }
 
+  // Prevent backward moves
+  if (from !== -1) { // Not moving from bar
+    if (color === 'white' && to < from) {
+      return false; // White must move towards point 24 (clockwise)
+    }
+    if (color === 'black' && to > from) {
+      return false; // Black must move towards point 1 (counterclockwise)
+    }
+  }
+
   const toPoint = gameState.points[to - 1];
   if (toPoint.pieces.length > 1 && toPoint.pieces[0] !== color) {
     return false;
   }
 
   // Check if the move distance is available in dice
-  const distance = color === 'white' 
-    ? (from === -1 ? to : to - from)
-    : (from === -1 ? 25 - to : from - to);
+  const distance = Math.abs(color === 'white' 
+    ? (from === -1 ? 25 - to : from - to)
+    : (from === -1 ? to : to - from));
   
-  return gameState.dice.available.includes(Math.abs(distance));
+  return gameState.dice.available.includes(distance);
 };
 
 export const getPossibleMoves = (
@@ -90,7 +100,7 @@ export const getPossibleMoves = (
       return [];
     }
     // Check possible entry points
-    const entryPoints = color === 'white' ? [1, 2, 3, 4, 5, 6] : [24, 23, 22, 21, 20, 19];
+    const entryPoints = color === 'white' ? [19, 20, 21, 22, 23, 24] : [6, 5, 4, 3, 2, 1];
     entryPoints.forEach(point => {
       if (isValidMove(gameState, -1, point, color)) {
         possibleMoves.push(point);
@@ -109,7 +119,7 @@ export const getPossibleMoves = (
 
   // Check bearing off
   if (canBearOff(gameState, color)) {
-    const bearOffPosition = color === 'white' ? 25 : 0;
+    const bearOffPosition = color === 'white' ? 0 : 25;
     if (isValidMove(gameState, position, bearOffPosition, color)) {
       possibleMoves.push(bearOffPosition);
     }
@@ -150,8 +160,8 @@ export const makeMove = (
 
   // Remove used die
   const distance = Math.abs(color === 'white' 
-    ? (from === -1 ? to : to - from)
-    : (from === -1 ? 25 - to : from - to));
+    ? (from === -1 ? 25 - to : from - to)
+    : (from === -1 ? to : to - from));
   const dieIndex = newState.dice.available.indexOf(distance);
   newState.dice.available.splice(dieIndex, 1);
 
